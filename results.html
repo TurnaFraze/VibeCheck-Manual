@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Assessment Results | Legacy Business Atmosphere</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h2>Assessment Results</h2>
+    <section id="visualization">
+      <div id="graph-container">
+        <img id="base-img" src="img/base-graph.png" alt="Base Graph" />
+        <img id="focus-overlay" class="overlay" />
+        <img id="values-overlay" class="overlay" />
+        <img id="social-overlay" class="overlay" />
+      </div>
+    </section>
+    <section id="summary">
+      <p><strong>Business Name:</strong> <span id="result-business"></span></p>
+      <p><strong>ZIP Code:</strong> <span id="result-zip"></span></p>
+      <p><strong>Dominant Vibe:</strong> <span id="dominant-vibe"></span></p>
+    </section>
+    <section id="scores">
+      <h3>Principle Scores</h3>
+      <ul id="principle-scores"></ul>
+      <h3>Paired Scores</h3>
+      <ul id="paired-scores"></ul>
+    </section>
+    <section id="insights"></section>
+    <div class="footer">
+      Legacy Assessment &copy; 2025
+    </div>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>

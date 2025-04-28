@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Legacy Business Atmosphere Assessment</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Legacy Business Atmosphere Assessment</h1>
+    <p class="intro">Rate each question from 1–6 based on what best reflects your business or team.</p>
+    <form id="legacy-form" autocomplete="off">
+      <div class="form-row">
+        <label for="businessName">Business/Team Name <span class="required">*</span></label>
+        <input type="text" id="businessName" name="businessName" required maxlength="100" placeholder="Enter business or team name">
+      </div>
+      <div class="form-row">
+        <label for="zipCode">ZIP Code <span class="required">*</span></label>
+        <input type="text" id="zipCode" name="zipCode" required pattern="\d{5}" maxlength="5" placeholder="e.g. 12345" inputmode="numeric">
+      </div>
+      <div id="questions"></div>
+      <button type="submit">See My Results</button>
+    </form>
+    <div class="footer">
+      Legacy Assessment &copy; 2025
+    </div>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
