@@ -359,5 +359,186 @@ if (window.location.pathname.endsWith("results.html")) {
     overlays[pair].alt = `${pair} overlay, level ${overlayLevel}`;
   });
 
-  // Optionally: Generate insights here
+ // --- Data Definitions ---
+// Replace these with your actual questions and mappings
+const legacyQuestions = [
+  // Example (replace with your real set and principles)
+  { label: "Our team adapts quickly to change.", principle: "WA" },
+  { label: "We have clear goals and expectations.", principle: "PP" },
+  { label: "We value open, honest communication.", principle: "CI" },
+  { label: "We take action methodically.", principle: "AM" },
+  { label: "We support each other's growth.", principle: "GB" },
+  { label: "We act in alignment with our core beliefs.", principle: "TI" },
+  // ...add all your questions, each mapped to a principle (PP, WA, CI, AM, GB, TI)
+];
+
+const principleNames = {
+  PP: "Power & Purpose",
+  WA: "Wisdom & Adaptation",
+  CI: "Connection & Impact",
+  AM: "Action & Method",
+  GB: "Growth & Balance",
+  TI: "Truth & Identity"
+};
+
+const pairedPrinciples = {
+  Focus: ["PP", "AM"],
+  Values: ["CI", "TI"],
+  Social: ["WA", "GB"]
+};
+
+const dominantDescriptions = {
+  Focus: "Focus describes how your organization balances structure and adaptability. A high Focus means your team is goal-driven and organized; a lower Focus suggests flexibility and a creative, responsive environment.",
+  Values: "Values reflects how much guiding principles shape your team's decisions. High Values means your actions are mission- and principle-centered. Lower Values means your team adapts pragmatically to what works.",
+  Social: "Social captures the level of connection, collaboration, and mutual support. High Social means a deeply connected, team-driven space. Lower Social means more independence and personal responsibility."
+};
+
+const focusLevels = [
+  "Flexible and responsive — adapts easily to change and thrives on spontaneity.",
+  "Open and exploratory — curious and willing to try new directions.",
+  "Balanced — structure exists, but there’s room for creativity and adjustment.",
+  "Purpose-driven — clear goals guide most work, with some flexibility for innovation.",
+  "Highly organized — projects are structured, expectations are clear, and deadlines matter.",
+  "Intensely focused — every action is aligned with mission or targets; progress is closely tracked."
+];
+const valuesLevels = [
+  "Pragmatic and adaptable — decisions are made based on what works in the moment.",
+  "Situational — principles are valued, but flexibility is key to getting things done.",
+  "Balanced — respect for both practical outcomes and guiding principles.",
+  "Ideals-informed — clear values influence actions, but adaptability is still present.",
+  "Strongly principled — shared values are central to decisions and team identity.",
+  "Mission-centric — the organization’s core beliefs are evident in every action and interaction."
+];
+const socialLevels = [
+  "Independent — work is often solo; individuals are trusted to manage themselves.",
+  "Private — collaboration happens when necessary, but personal space is respected.",
+  "Balanced — a healthy mix of independent work and collaboration.",
+  "Cooperative — teamwork is encouraged, and sharing ideas is common.",
+  "Highly collaborative — open, communicative, and team-driven environment.",
+  "Deeply connected — relationships and group identity are central; feedback and support flow freely."
+];
+
+// --- Questionnaire Rendering (index.html) ---
+if (document.getElementById("legacy-form")) {
+  // Render questions
+  const questionsDiv = document.getElementById("questions");
+  questionsDiv.innerHTML = legacyQuestions.map((q, i) => `
+    <div class="question">
+      <label for="q${i}">${q.label}</label>
+      <select id="q${i}" name="q${i}" required>
+        <option value="">Choose…</option>
+        <option value="1">1 (Lowest)</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+        <option value="6">6 (Highest)</option>
+      </select>
+    </div>
+  `).join('');
+
+  // Handle form submission
+  document.getElementById('legacy-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const form = e.target;
+    const businessName = form.businessName.value.trim();
+    const zipCode = form.zipCode.value.trim();
+
+    // Gather answers
+    const answers = [];
+    for (let i = 0; i < legacyQuestions.length; i++) {
+      const val = form[`q${i}`].value;
+      if (!val) {
+        alert("Please answer all questions.");
+        return;
+      }
+      answers.push(parseInt(val, 10));
+    }
+
+    // Calculate scores
+    const scores = { PP: 0, WA: 0, CI: 0, AM: 0, GB: 0, TI: 0 };
+    legacyQuestions.forEach((q, idx) => {
+      scores[q.principle] += answers[idx];
+    });
+
+    // Paired scores
+    const pairs = {};
+    Object.entries(pairedPrinciples).forEach(([pair, arr]) => {
+      // Each paired score is the average of its two principles, rounded to nearest whole number and clamped to 1-6
+      const avg = Math.round((scores[arr[0]] + scores[arr[1]]) / (2 * (legacyQuestions.length / 6)));
+      pairs[pair] = Math.max(1, Math.min(6, avg));
+    });
+
+    // Find dominant
+    let dominant = Object.keys(pairs).reduce((a, b) => (pairs[a] > pairs[b] ? a : b));
+
+    // Prepare params
+    const params = new URLSearchParams();
+    params.set('business', businessName);
+    params.set('zip', zipCode);
+    params.set('dominant', dominant);
+
+    Object.entries(scores).forEach(([k, v]) => params.set(k, v));
+    Object.entries(pairs).forEach(([k, v]) => params.set(k, v));
+
+    window.location.href = "results.html?" + params.toString();
+  });
+}
+
+// --- Results Page Logic (results.html) ---
+if (window.location.pathname.endsWith("results.html")) {
+  const urlParams = new URLSearchParams(window.location.search);
+
+  // Fill in summary section
+  document.getElementById("result-business").textContent = urlParams.get("business") || "";
+  document.getElementById("result-zip").textContent = urlParams.get("zip") || "";
+  document.getElementById("dominant-vibe").textContent = urlParams.get("dominant") || "";
+
+  // Show principle scores
+  const principleScoreList = document.getElementById("principle-scores");
+  if (principleScoreList) {
+    principleScoreList.innerHTML = Object.keys(principleNames).map(key => {
+      const val = urlParams.get(key) || "0";
+      return `<li><strong>${principleNames[key]}:</strong> ${val}</li>`;
+    }).join('');
+  }
+
+  // Show paired scores
+  const pairedScoreList = document.getElementById("paired-scores");
+  if (pairedScoreList) {
+    pairedScoreList.innerHTML = Object.keys(pairedPrinciples).map(key => {
+      const val = urlParams.get(key) || "0";
+      return `<li><strong>${key}:</strong> ${val}</li>`;
+    }).join('');
+  }
+
+  // Insights Section
+  const insightsSection = document.getElementById("insights");
+  const dominant = urlParams.get("dominant");
+  const focusScore = parseInt(urlParams.get("Focus"), 10) || 0;
+  const valuesScore = parseInt(urlParams.get("Values"), 10) || 0;
+  const socialScore = parseInt(urlParams.get("Social"), 10) || 0;
+
+  function getLevelText(levelArr, score) {
+    if (score >= 1 && score <= 6) {
+      return levelArr[score - 1];
+    } else {
+      return "No score available.";
+    }
+  }
+
+  let insightText = `<h3>Your Dominant Vibe: ${dominant}</h3>`;
+  if (dominantDescriptions[dominant]) {
+    insightText += `<p>${dominantDescriptions[dominant]}</p>`;
+  }
+
+  insightText += `<h4>How It Feels:</h4>`;
+  insightText += `<strong>Focus:</strong> Level ${focusScore} — ${getLevelText(focusLevels, focusScore)}<br>`;
+  insightText += `<strong>Values:</strong> Level ${valuesScore} — ${getLevelText(valuesLevels, valuesScore)}<br>`;
+  insightText += `<strong>Social:</strong> Level ${socialScore} — ${getLevelText(socialLevels, socialScore)}<br>`;
+
+  insightText += `<hr><em>There is no “perfect” score. Your results are a reflection of your team's unique style. Use these results for reflection and discussion!</em>`;
+
+  if (insightsSection) insightsSection.innerHTML = insightText;
+}
 }
